@@ -38,15 +38,20 @@ class AbstractBlockController {
     }
 
     private function enqueue_frontend_if_is_theme() {
-        $theme_url            = get_stylesheet_directory_uri();
-        $explode              = explode( '/', $theme_url );
+        $theme_url  = get_stylesheet_directory_uri();
+        $explode    = explode( '/', $theme_url );
         $theme_name = array_pop( $explode );
 
         $explode                 = explode( 'themes/' . $theme_name, $this->block_basedir );
         $theme_relative_base_dir = array_pop( $explode );
 
-        $script_asset_path = $this->block_basedir . 'frontend.asset.php';
-        $script_asset      = file_exists( $script_asset_path ) ? require $script_asset_path : [
+        $script_php_path   = $this->block_basedir . 'frontend.asset.php';
+        $script_asset_path = $this->block_basedir . 'frontend.js';
+        if ( !file_exists( $script_asset_path ) ) {
+            return;
+        }
+
+        $script_asset = file_exists( $script_php_path ) ? require $script_php_path : [
             'dependencies' => ['react', 'wp-element', 'wp-i18n'],
             'version'      => filemtime( $script_asset_path ),
         ];
@@ -57,8 +62,13 @@ class AbstractBlockController {
 
     private function enqueue_frontend_if_is_plugin() {
 
-        $script_asset_path = $this->block_basedir . 'frontend.asset.php';
-        $script_asset      = file_exists( $script_asset_path ) ? require $script_asset_path : [
+        $script_php_path   = $this->block_basedir . 'frontend.asset.php';
+        $script_asset_path = $this->block_basedir . 'frontend.js';
+        if ( !file_exists( $script_asset_path ) ) {
+            return;
+        }
+
+        $script_asset = file_exists( $script_php_path ) ? require $script_php_path : [
             'dependencies' => ['react', 'wp-element', 'wp-i18n'],
             'version'      => filemtime( $script_asset_path ),
         ];
@@ -70,6 +80,7 @@ class AbstractBlockController {
     /**
      * Add attributes to the block main div as data attributes.
      * Copied from WooCommerce Blocks.
+     *
      *
      * @see https://developer.woocommerce.com/2021/11/15/how-does-woocommerce-blocks-render-interactive-blocks-in-the-frontend/
      *
