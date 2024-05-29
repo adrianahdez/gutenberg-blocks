@@ -4,6 +4,7 @@
  * @see https://developer.wordpress.org/block-editor/reference-guides/packages/packages-i18n/
  */
 import { __ } from '@wordpress/i18n';
+import { useState, useEffect } from "react";
 
 /**
  * React hook that is used to mark the block wrapper element.
@@ -35,6 +36,31 @@ export default function Edit({ attributes, setAttributes }) {
 	const blockProps = useBlockProps();
 	const { cpt, perPage, textForShowGalleryButton, showDate, isPaginated } = attributes;
 	const hasGalleryStyle = blockProps.className?.includes('is-style-custom-cpt');
+	const [cpts, setCpts] = useState(null);
+
+	useEffect(() => {
+		const timeoutId = setTimeout(() => fetchData(), 300);
+		return () => clearTimeout(timeoutId);
+	}, [])
+
+	const fetchData = async () => {
+		try {
+			// Fetch all the available CPTs
+			const apiUrl = `${customBlocks.api.root}/post-types/`;
+			const params = new URLSearchParams();
+			const exclude = "attachment,page,revision,nav_menu_item";
+			params.append('exclude', exclude);
+			const postsResponse = await fetch(`${apiUrl}?${params.toString()}`);
+
+			if (!postsResponse?.ok) {
+				throw new Error("Failed to fetch post types");
+			}
+			const fetchedData = await postsResponse?.json();
+			setCpts(fetchedData);
+		} catch (error) {
+			setCpts([]);
+		}
+	};
 
 	const handleCptChange = (cpt) => {
 		setAttributes({ cpt: cpt });
@@ -56,6 +82,13 @@ export default function Edit({ attributes, setAttributes }) {
 		setAttributes({ isPaginated: newValue });
 	}
 
+	const options = [];
+	if (cpts?.length > 0) {
+		cpts.forEach(cpt => {
+			options.push({ label: cpt.label, value: cpt.slug });
+		});
+	}
+
 	return (
 		<>
 			<InspectorControls>
@@ -63,10 +96,7 @@ export default function Edit({ attributes, setAttributes }) {
 					<SelectControl
 						label={__('CPT to get posts from', 'gutenberg-blocks')}
 						value={cpt}
-						options={[
-							{ label: 'Posts', value: 'post' },
-							{ label: 'Gallery', value: 'gallery' },
-						]}
+						options={options}
 						onChange={handleCptChange}
 						type="text"
 					/>

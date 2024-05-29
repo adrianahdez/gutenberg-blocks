@@ -3,6 +3,7 @@ namespace GutenbergBlocks\Controllers;
 
 use GutenbergBlocks\Services\GetFilesService;
 use GutenbergBlocks\Services\GetPostsService;
+use GutenbergBlocks\Services\GetPostTypeService;
 use GutenbergBlocks\Services\ValidationService;
 use WP_REST_Server;
 
@@ -12,10 +13,12 @@ class ApiController {
     private $files_service;
     private $posts_service;
     private $validation_service;
+    private $post_type_service;
 
     public function __construct() {
         $this->files_service      = new GetFilesService();
         $this->posts_service      = new GetPostsService();
+        $this->post_type_service  = new GetPostTypeService();
         $this->validation_service = new ValidationService();
         add_action( 'rest_api_init', [$this, 'register_routes'] );
     }
@@ -64,6 +67,21 @@ class ApiController {
                     ],
                 ],
                 'lang'      => [
+                    'required'          => false,
+                    'validate_callback' => [
+                        $this->validation_service,
+                        'validate_required',
+                    ],
+                ],
+            ],
+        ] );
+
+        register_rest_route( 'gutenberg-blocks', '/post-types', [
+            'methods'             => WP_REST_Server::READABLE,
+            'callback'            => [$this->post_type_service, 'get'],
+            'permission_callback' => '__return_true',
+            'args'                => [
+                'exclude' => [
                     'required'          => false,
                     'validate_callback' => [
                         $this->validation_service,

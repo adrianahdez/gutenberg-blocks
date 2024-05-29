@@ -51,14 +51,14 @@ class PostsRepository {
                 $image       = get_the_post_thumbnail_url( $id, 'large' ) ?: '';
 
                 $response['posts'][] = [
-                    'id'      => $id,
-                    'title'   => get_the_title(),
-                    'url'     => get_the_permalink(),
-                    'date'    => get_the_modified_date(),
-                    'excerpt' => get_the_excerpt() ?: '',
-                    'image'   => $image,
+                    'id'         => $id,
+                    'title'      => get_the_title(),
+                    'url'        => get_the_permalink(),
+                    'date'       => get_the_modified_date(),
+                    'excerpt'    => get_the_excerpt() ?: '',
+                    'image'      => $image,
                     'videoEmbed' => $video_embed,
-                    'srcset'  => wp_get_attachment_image_srcset( get_post_thumbnail_id( $id ) ) ?: '',
+                    'srcset'     => wp_get_attachment_image_srcset( get_post_thumbnail_id( $id ) ) ?: '',
                 ];
             }
         } else {
@@ -101,5 +101,34 @@ class PostsRepository {
         $active_plugins = get_option( 'active_plugins', [] );
 
         return in_array( $plugin, $active_plugins );
+    }
+
+    /**
+     * Get post types
+     *
+     * @param  array   $exclude The post types to exclude.
+     * @return array
+     */
+    public function get_post_types( $exclude = [] ) {
+        $response = [];
+
+        $post_types = get_post_types( [
+            'public' => true,
+        ], 'objects' );
+
+        if ( !empty( $post_types ) ) {
+            foreach ( $post_types as $post_type ) {
+                if ( in_array( $post_type->name, $exclude ) ) {
+                    continue;
+                }
+
+                $response[] = [
+                    'slug'  => $post_type->name,
+                    'label' => $post_type->label,
+                ];
+            }
+        }
+
+        return $response;
     }
 }
