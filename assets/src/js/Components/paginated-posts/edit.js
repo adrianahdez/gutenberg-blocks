@@ -34,7 +34,7 @@ import Component from './Component';
  */
 export default function Edit({ attributes, setAttributes }) {
 	const blockProps = useBlockProps();
-	const { cpt, perPage, textForShowGalleryButton, showDate, isPaginated } = attributes;
+	const { cpt, perPage, textForReadMore, textForShowGalleryButton, showDate, isPaginated } = attributes;
 	const hasGalleryStyle = blockProps.className?.includes('is-style-custom-cpt');
 	const [cpts, setCpts] = useState(null);
 
@@ -70,8 +70,12 @@ export default function Edit({ attributes, setAttributes }) {
 		setAttributes({ perPage: parseInt(perPage) });
 	};
 
-	const handleTextChange = (text) => {
+	const handleShowGalleryTextChange = (text) => {
 		setAttributes({ textForShowGalleryButton: text });
+	}	
+	
+	const handleReadMoreTextChange = (text) => {
+		setAttributes({ textForReadMore: text });
 	}
 
 	const handleShowDateChange = (newValue) => {
@@ -106,10 +110,16 @@ export default function Edit({ attributes, setAttributes }) {
 						onChange={handlePerPageChange}
 						type="number"
 					/>
+					{!hasGalleryStyle && (<TextControl
+						label={__('Text for "read more" button', 'elmusel')}
+						value={textForReadMore}
+						onChange={handleReadMoreTextChange}
+						type="text"
+					/>)}
 					{hasGalleryStyle && (<TextControl
-						label={__('Text for "Show gallery" button', 'gutenberg-blocks')}
+						label={__('Text for "Show gallery" button', 'elmusel')}
 						value={textForShowGalleryButton}
-						onChange={handleTextChange}
+						onChange={handleShowGalleryTextChange}
 						type="text"
 					/>)}
 					{!hasGalleryStyle && (<ToggleControl

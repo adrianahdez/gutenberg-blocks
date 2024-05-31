@@ -6,7 +6,7 @@ import GalleryModal from "../modal/GalleryModal";
 import PostCard from "./PostCard";
 
 export default function Component({ attributes, is_edit_mode, blockProps }) {
-  const { cpt, perPage, className, textForShowGalleryButton, showDate, isPaginated } = attributes;
+  const { cpt, perPage, textForReadMore, className, textForShowGalleryButton, showDate, isPaginated } = attributes;
 
   const [response, setResponse] = useState(null);
   const [pageNum, setPageNum] = useState(1);
@@ -105,7 +105,7 @@ export default function Component({ attributes, is_edit_mode, blockProps }) {
     }
 
     return response?.posts.map((post, index) => (
-      <PostCard key={index} post={post} isEditMode={is_edit_mode} hasGalleryStyle={hasGalleryStyle} showDate={showDate} handlePostClick={handlePostClick} />
+      <PostCard key={index} post={post} textForReadMore={textForReadMore} isEditMode={is_edit_mode} hasGalleryStyle={hasGalleryStyle} showDate={showDate} handlePostClick={handlePostClick} />
     ))
   }
 
