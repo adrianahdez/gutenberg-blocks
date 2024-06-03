@@ -72,7 +72,8 @@ export default function Component({ attributes, setAttributes, is_edit_mode }) {
       return (
         <div key={index} className="single-file-container">
           <div className="single-file-container__heading">
-            <img loading="lazy" src={file.icon} alt="file-icon" />
+            {file.icon && <img loading="lazy" src={file.icon} alt="file-icon" />}
+            {!file.icon && <span className="file-icon skeleton__content"></span>}
             <div className="file-text-container">
               <p>{file.title}</p>
             </div>
