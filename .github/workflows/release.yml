@@ -1,0 +1,67 @@
+name: Create and Publish Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install zip and jq
+        run: sudo apt-get install -y zip jq
+
+      - name: Get short commit hash
+        id: get_commit_hash
+        run: echo "COMMIT_HASH=$(git rev-parse --short=5 HEAD)" >> $GITHUB_ENV
+
+      - name: Run release script
+        run: bash release.sh
+
+      - name: List release directory
+        run: ls -l releases/
+
+      - name: Create Release
+        id: create_release
+        run: |
+          echo "Creating release..."
+          response=$(curl -s -X POST \
+            -H "Authorization: token ${{ secrets.MY_GITHUB_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{"tag_name": "release-${{ env.COMMIT_HASH }}", "name": "release-${{ env.COMMIT_HASH }}", "body": "Release description"}' \
+            https://api.github.com/repos/${{ github.repository }}/releases)
+          echo "$response"
+          upload_url=$(echo "$response" | jq -r '.upload_url' | sed "s/{?name,label}//")
+          if [ "$upload_url" == "null" ]; then
+            echo "Failed to get upload URL. Check the response above for errors."
+            exit 1
+          fi
+          echo "UPLOAD_URL=$upload_url" >> $GITHUB_ENV
+          echo "Release created at: $upload_url"
+
+      - name: Upload Release Asset
+        run: |
+          echo "Uploading release asset..."
+          if [ -f releases/release-${{ env.COMMIT_HASH }}.zip ]; then
+            curl -s -X POST \
+              -H "Authorization: token ${{ secrets.MY_GITHUB_TOKEN }}" \
+              -H "Content-Type: application/zip" \
+              --data-binary @releases/release-${{ env.COMMIT_HASH }}.zip \
+              "${{ env.UPLOAD_URL }}?name=release-${{ env.COMMIT_HASH }}.zip"
+            echo "Upload complete."
+          else
+            echo "File releases/release-${{ env.COMMIT_HASH }}.zip not found."
+            exit 1
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
