@@ -11,4 +11,4 @@ ZIP_NAME="release-${COMMIT_HASH}.zip"
 mkdir -p "$RELEASE_DIR"
 
 # Create the zip file, excluding the specified files and directories
-zip -r "$RELEASE_DIR/$ZIP_NAME" . -x "*.git*" -x ".github/*" -x "README.md" -x "release.sh" -x ".gitignore" -x "$RELEASE_DIR/*"
+zip -r "$RELEASE_DIR/$ZIP_NAME" . -x "*.git*" -x ".github/*" -x "release.sh" -x ".gitignore" -x "$RELEASE_DIR/*"
