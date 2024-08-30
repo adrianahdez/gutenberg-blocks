@@ -23,7 +23,9 @@ jobs:
 
       - name: Get short commit hash
         id: get_commit_hash
-        run: echo "COMMIT_HASH=$(git rev-parse --short=5 HEAD)" >> $GITHUB_ENV
+        run: |
+          echo "COMMIT_HASH=$(git rev-parse --short=5 HEAD)" >> $GITHUB_ENV
+          echo "DATE_TIME=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
 
       - name: Run release script
         run: bash release.sh
@@ -38,7 +40,7 @@ jobs:
           response=$(curl -s -X POST \
             -H "Authorization: token ${{ secrets.MY_GITHUB_TOKEN }}" \
             -H "Content-Type: application/json" \
-            -d '{"tag_name": "release-${{ env.COMMIT_HASH }}", "name": "release-${{ env.COMMIT_HASH }}", "body": "Release description"}' \
+            -d '{"tag_name": "release-${{ env.COMMIT_HASH }}-${{ env.DATE_TIME }}", "name": "release-${{ env.COMMIT_HASH }}-${{ env.DATE_TIME }}", "body": "Release description"}' \
             https://api.github.com/repos/${{ github.repository }}/releases)
           echo "$response"
           upload_url=$(echo "$response" | jq -r '.upload_url' | sed "s/{?name,label}//")
@@ -52,15 +54,15 @@ jobs:
       - name: Upload Release Asset
         run: |
           echo "Uploading release asset..."
-          if [ -f releases/release-${{ env.COMMIT_HASH }}.zip ]; then
+          if [ -f releases/release-${{ env.COMMIT_HASH }}-${{ env.DATE_TIME }}.zip ]; then
             curl -s -X POST \
               -H "Authorization: token ${{ secrets.MY_GITHUB_TOKEN }}" \
               -H "Content-Type: application/zip" \
-              --data-binary @releases/release-${{ env.COMMIT_HASH }}.zip \
-              "${{ env.UPLOAD_URL }}?name=release-${{ env.COMMIT_HASH }}.zip"
+              --data-binary @releases/release-${{ env.COMMIT_HASH }}-${{ env.DATE_TIME }}.zip \
+              "${{ env.UPLOAD_URL }}?name=release-${{ env.COMMIT_HASH }}-${{ env.DATE_TIME }}.zip"
             echo "Upload complete."
           else
-            echo "File releases/release-${{ env.COMMIT_HASH }}.zip not found."
+            echo "File releases/release-${{ env.COMMIT_HASH }}-${{ env.DATE_TIME }}.zip not found."
             exit 1
           fi
         env:
